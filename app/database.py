@@ -1,5 +1,6 @@
 from sqlalchemy import Column, Float, ForeignKey, Integer, String, Text, create_engine
 from sqlalchemy.orm import declarative_base, relationship, sessionmaker
+from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
 DATABASE_URL = "sqlite:///./fitbuddy.db"
 
@@ -13,33 +14,60 @@ SessionLocal = sessionmaker(bind=engine, autoflush=False, autocommit=False)
 Base = declarative_base()
 
 
+# class User(Base):
+#     __tablename__ = "users"
+
+#     id = Column(Integer, primary_key=True, index=True)
+#     user_id = Column(Integer, unique=True, index=True, nullable=False)
+#     name = Column(String(120), nullable=False)
+#     age = Column(Integer, nullable=False)
+#     weight = Column(Float, nullable=False)
+#     goal = Column(String(120), nullable=False)
+#     intensity = Column(String(20), nullable=False)
+
+#     plans = relationship(
+#         "WorkoutPlan",
+#         back_populates="user",
+#         cascade="all, delete-orphan",
+#     )
+
+class Base(DeclarativeBase):
+    pass
+
+
 class User(Base):
-    __tablename__ = "users"
+    __tablename__ = "workout_plans"
 
-    id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(Integer, unique=True, index=True, nullable=False)
-    name = Column(String(120), nullable=False)
-    age = Column(Integer, nullable=False)
-    weight = Column(Float, nullable=False)
-    goal = Column(String(120), nullable=False)
-    intensity = Column(String(20), nullable=False)
+    id:Mapped[int] = mapped_column(primary_key= True, index= True)
+    user_id: Mapped[int] = mapped_column(unique= True, index=True, nullable=False)
+    name:Mapped[str] = mapped_column(String(120), nullable=False)
+    age:Mapped[int] = mapped_column(nullable=False)
+    weight:Mapped[float] = mapped_column(nullable=False)
+    goal:Mapped[str] = mapped_column(String(120), nullable=False)
+    intensity:Mapped[str] = mapped_column(String(20), nullable=False)
 
-    plans = relationship(
-        "WorkoutPlan",
-        back_populates="user",
-        cascade="all, delete-orphan",
-    )
+# class WorkoutPlan(Base):
+#     __tablename__ = "workout_plans"
 
+#     id = Column(Integer, primary_key=True, index=True)
+#     user_id = Column(Integer, ForeignKey("users.user_id"), nullable=False, index=True)
+#     original_plan = Column(Text, nullable=False)
+#     updated_plan = Column(Text, nullable=True)
+
+#     user = relationship("User", back_populates="plans")
 
 class WorkoutPlan(Base):
     __tablename__ = "workout_plans"
 
-    id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(Integer, ForeignKey("users.user_id"), nullable=False, index=True)
-    original_plan = Column(Text, nullable=False)
-    updated_plan = Column(Text, nullable=True)
+    id: Mapped[int] = mapped_column(primary_key=True, index=True)
+    user_id: Mapped[int] = mapped_column(
+        ForeignKey("users.user_id"),
+        nullable=False,
+        index=True
+    )
+    original_plan:Mapped[str] = mapped_column(Text, nullable=False)
+    updated_plan: Mapped[str | None] = mapped_column(Text, nullable=False)
 
-    user = relationship("User", back_populates="plans")
 
 
 Base.metadata.create_all(bind=engine)
@@ -113,10 +141,14 @@ def update_plan(user_id: int, updated_text: str):
         db.close()
 
 
-def get_original_plan(user_id: int):
+def get_original_plan(user_id: int) -> str | None:
     db = SessionLocal()
     try:
-        workout = db.query(WorkoutPlan).filter(WorkoutPlan.user_id == user_id).first()
+        workout = (
+            db.query(WorkoutPlan)
+            .filter(WorkoutPlan.user_id == user_id)
+            .first()
+        )
         return workout.original_plan if workout else None
     finally:
         db.close()

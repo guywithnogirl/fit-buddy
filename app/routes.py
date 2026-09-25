@@ -22,8 +22,9 @@ router = APIRouter()
 @router.get("/")
 async def home(request: Request):
     return templates.TemplateResponse(
-        "index.html",
-        {"request": request},
+        request=request,
+        name="index.html",
+        context={"request": request}
     )
 
 
@@ -62,8 +63,9 @@ async def generate_workout(
         save_plan(user_data.user_id, plan)
 
         return templates.TemplateResponse(
-            "result.html",
-            {
+            request=request,
+            name="result.html",
+            context={
                 "request": request,
                 "username": user_data.username,
                 "user_id": user_data.user_id,
@@ -74,7 +76,7 @@ async def generate_workout(
                 "workout_plan": plan,
                 "nutrition_tip": nutrition_tip,
                 "updated_plan": None,
-            },
+            }
         )
     except Exception as exc:
         raise HTTPException(status_code=500, detail=str(exc))
@@ -100,20 +102,21 @@ async def submit_feedback(
     user = __import__("app.database", fromlist=["get_user"]).get_user(user_id)
 
     return templates.TemplateResponse(
-        "result.html",
-        {
+        request=request,
+        name="result.html",
+        context={
             "request": request,
-            "username": user.name if user else "User",
-            "user_id": user_id,
-            "age": user.age if user else "",
-            "weight": user.weight if user else "",
-            "goal": user.goal if user else "",
-            "intensity": user.intensity if user else "",
-            "workout_plan": original,
-            "nutrition_tip": generate_nutrition_tip_with_flash(user.goal) if user else "",
-            "updated_plan": updated,
-            "feedback_submitted": True,
-        },
+                        "username": user.name if user else "User",
+                        "user_id": user_id,
+                        "age": user.age if user else "",
+                        "weight": user.weight if user else "",
+                        "goal": user.goal if user else "",
+                        "intensity": user.intensity if user else "",
+                        "workout_plan": original,
+                        "nutrition_tip": generate_nutrition_tip_with_flash(user.goal) if user else "",
+                        "updated_plan": updated,
+                        "feedback_submitted": True
+        }
     )
 
 
@@ -144,11 +147,17 @@ async def view_all_users(request: Request):
         )
 
     return templates.TemplateResponse(
-        "all_users.html",
-        {
+        request=request,
+        name="all_users.html",
+        context={
             "request": request,
             "users": users_data,
-        },
+        }
+        # "all_users.html",
+        # {
+        #     "request": request,
+        #     "users": users_data,
+        # },
     )
 
 

@@ -1,6 +1,6 @@
 import os
 
-import google.generativeai as genai
+from google import genai
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -8,7 +8,7 @@ load_dotenv()
 API_KEY = os.getenv("GOOGLE_API_KEY")
 
 if API_KEY:
-    genai.configure(api_key=API_KEY)
+    client = genai.Client(api_key=API_KEY)
 
 
 def generate_nutrition_tip_with_flash(goal: str) -> str:
