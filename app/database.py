@@ -36,7 +36,7 @@ class Base(DeclarativeBase):
 
 
 class User(Base):
-    __tablename__ = "workout_plans"
+    __tablename__ = "users"
 
     id:Mapped[int] = mapped_column(primary_key= True, index= True)
     user_id: Mapped[int] = mapped_column(unique= True, index=True, nullable=False)
@@ -66,7 +66,7 @@ class WorkoutPlan(Base):
         index=True
     )
     original_plan:Mapped[str] = mapped_column(Text, nullable=False)
-    updated_plan: Mapped[str | None] = mapped_column(Text, nullable=False)
+    updated_plan: Mapped[str | None] = mapped_column(Text, nullable=True)
 
 
 

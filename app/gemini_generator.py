@@ -1,45 +1,49 @@
 import os
 
-# import google.generativeai as genai
-
-from google import genai
-
 from dotenv import load_dotenv
+from google import genai
 
 load_dotenv()
 
-API_KEY = os.getenv("GOOGLE_API_KEY")
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-3 .5-pro")
 
-if API_KEY:
-    client = genai.Client(api_key=API_KEY)
+client = genai.Client(api_key=GEMINI_API_KEY) if GEMINI_API_KEY else None
 
 
 def generate_workout_gemini(user_input: dict) -> str:
-    if not API_KEY:
-        return "Error: GOOGLE_API_KEY is not configured."
+    if client is None:
+        return "Error: GEMINI_API_KEY is not configured."
 
     goal = user_input.get("goal", "general fitness")
     intensity = user_input.get("intensity", "medium")
 
-    prompt = f'''
+    prompt = f"""
 You are a professional fitness trainer assistant.
 
-Create a personalized, structured 7-day workout plan for a user with the goal of
-"{goal}" and preferred workout intensity "{intensity}".
+Create a personalized, structured 7-day workout plan for a user with the goal
+of "{goal}" and preferred workout intensity "{intensity}".
 
 For each day include:
-- Warm-up (5-10 minutes)
-- Main workout with exercise names, sets, and reps or duration
+- Warm-up
+- Main workout
+- Exercises
+- Sets and repetitions or duration
 - Cooldown or recovery guidance
 
-Keep the plan practical, clearly organized by Day 1 through Day 7, and suitable
-for a general wellness application. Avoid making medical diagnoses or claiming
-the plan is suitable for a specific medical condition.
-'''
+Keep the plan practical and clearly organized from Day 1 through Day 7.
+"""
 
     try:
-        model = genai.GenerativeModel("gemini-1.5-pro")
-        response = model.generate_content(prompt)
+        response = client.models.generate_content(
+            model=GEMINI_MODEL,
+            contents=prompt,
+        )
+
+        if not response.text:
+            return "Error generating workout plan: Gemini returned an empty response."
+
         return response.text.strip()
-    except Exception as exc:
-        return f"Error generating workout plan: {exc}"
+
+    except Exception as e:
+        return f"Error generating workout plan: {e}"

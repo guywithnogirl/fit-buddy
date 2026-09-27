@@ -5,7 +5,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-API_KEY = os.getenv("GOOGLE_API_KEY")
+API_KEY = os.getenv("GEMINI_API_KEY")
 
 if API_KEY:
     client = genai.Client(api_key=API_KEY)
@@ -25,7 +25,7 @@ treatment or diagnose health conditions.
 '''
 
     try:
-        model = genai.GenerativeModel("gemini-1.5-flash")
+        model = genai.GenerativeModel("gemini-3.5-flash")
         response = model.generate_content(prompt)
         return response.text.strip()
     except Exception as exc:
