@@ -25,8 +25,14 @@ treatment or diagnose health conditions.
 '''
 
     try:
-        model = genai.GenerativeModel("gemini-3.5-flash")
-        response = model.generate_content(prompt)
+        response = client.models.generate_content(
+            model=("gemini-3.5-flash"),
+            contents=prompt
+        )
+
+        if not response.text:
+            print("Error")
+
         return response.text.strip()
     except Exception as exc:
         return f"Error generating nutrition tip: {exc}"
